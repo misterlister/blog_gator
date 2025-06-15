@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/misterlister/blog_gator/internal/config"
 )
@@ -12,19 +13,35 @@ func main() {
 		return
 	}
 
-	var currentUser = "Hayden"
+	var st state
 
-	err = cfg.SetUser(currentUser)
+	st.cfg = cfg
 
-	if err != nil {
-		return
+	var cmds commands
+
+	cmds.cmdList = make(map[string]func(*state, command) error)
+
+	cmds.register("login", handlerLogin)
+
+	if len(os.Args) < 2 {
+		fmt.Println("error: no command specified")
+		os.Exit(1)
 	}
 
-	newCfg, err := config.Read()
-	if err != nil {
-		return
+	var currCmd command
+
+	currCmd.name = os.Args[1]
+
+	if len(os.Args) > 2 {
+		currCmd.args = os.Args[2:]
 	}
 
-	fmt.Printf("%+v\n", newCfg)
+	err = cmds.run(&st, currCmd)
 
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	os.Exit(0)
 }
