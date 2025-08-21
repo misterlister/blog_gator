@@ -10,3 +10,6 @@ VALUES (
 -- name: GetUserByName :one
 SELECT * FROM users
 WHERE name = $1;
+
+-- name: ResetUsersTable :exec
+TRUNCATE TABLE users;
