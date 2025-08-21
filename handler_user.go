@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 )
@@ -11,18 +13,27 @@ func handlerLogin(s *state, cmd command) error {
 	}
 
 	if len(cmd.args) > 1 {
-		return errors.New("login requires only a username argument")
+		return errors.New("too many arguments provided")
 	}
 
 	username := cmd.args[0]
 
-	err := s.cfg.SetUser(username)
+	user, err := s.db.GetUserByName(context.Background(), username)
 
 	if err != nil {
-		return fmt.Errorf("couldn't set current user: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("user '%s' does not exist in the database", username)
+		}
+		return fmt.Errorf("error querying user '%s' : %w", username, err)
 	}
 
-	fmt.Printf("user '%s' has been logged in!\n", username)
+	err = s.cfg.SetUser(user.Name)
+
+	if err != nil {
+		return fmt.Errorf("couldn't log in as user '%s': %w", user.Name, err)
+	}
+
+	fmt.Printf("user '%s' has been logged in!\n", user.Name)
 
 	return nil
 }
