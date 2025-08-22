@@ -12,5 +12,9 @@ VALUES (
 -- name: GetFeeds :many
 SELECT * FROM feeds;
 
+-- name: GetFeedByURL :one
+SELECT * FROM feeds
+WHERE url = $1;
+
 -- name: ResetFeedsTable :exec
 DELETE FROM feeds;
