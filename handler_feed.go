@@ -10,7 +10,7 @@ import (
 	"github.com/misterlister/blog_gator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 2 {
 		return errors.New("must provide a name and URL to add a feed")
 	}
@@ -21,13 +21,6 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	feedName := cmd.args[0]
 	feedURL := cmd.args[1]
-	username := s.cfg.CurrentUserName
-
-	user, err := s.db.GetUserByName(context.Background(), username)
-
-	if err != nil {
-		return err
-	}
 
 	params := database.CreateFeedParams{
 		ID:        uuid.New(),
@@ -60,7 +53,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Printf("%s is now following %s\n", username, newFeed.Name)
+	fmt.Printf("%s is now following %s\n", user.Name, newFeed.Name)
 
 	return nil
 }

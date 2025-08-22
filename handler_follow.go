@@ -10,7 +10,7 @@ import (
 	"github.com/misterlister/blog_gator/internal/database"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 1 {
 		return errors.New("please provide the URL of the feed to follow")
 	}
@@ -21,13 +21,6 @@ func handlerFollow(s *state, cmd command) error {
 
 	feedURL := cmd.args[0]
 	feed, err := s.db.GetFeedByURL(context.Background(), feedURL)
-
-	if err != nil {
-		return err
-	}
-
-	username := s.cfg.CurrentUserName
-	user, err := s.db.GetUserByName(context.Background(), username)
 
 	if err != nil {
 		return err
@@ -47,21 +40,14 @@ func handlerFollow(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Printf("%s is now following %s\n", username, feed.Name)
+	fmt.Printf("%s is now following %s\n", user.Name, feed.Name)
 
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
+func handlerFollowing(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 0 {
 		return errors.New("too many arguments provided")
-	}
-
-	username := s.cfg.CurrentUserName
-	user, err := s.db.GetUserByName(context.Background(), username)
-
-	if err != nil {
-		return err
 	}
 
 	feedList, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
@@ -71,11 +57,11 @@ func handlerFollowing(s *state, cmd command) error {
 	}
 
 	if len(feedList) == 0 {
-		fmt.Printf("%s is is following no feeds\n", username)
+		fmt.Printf("%s is is following no feeds\n", user.Name)
 		return nil
 	}
 
-	fmt.Printf("%s is following:\n", username)
+	fmt.Printf("%s is following:\n", user.Name)
 
 	for _, feed := range feedList {
 		fmt.Printf(" - %s\n", feed.FeedName)
