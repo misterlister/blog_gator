@@ -11,7 +11,13 @@ func handlerReset(s *state, cmd command) error {
 		return errors.New("too many arguments provided")
 	}
 
-	err := s.db.ResetUsersTable(context.Background())
+	err := s.db.ResetFeedsTable(context.Background())
+
+	if err != nil {
+		return fmt.Errorf("could not reset users: %w", err)
+	}
+
+	err = s.db.ResetUsersTable(context.Background())
 
 	if err != nil {
 		return fmt.Errorf("could not reset users: %w", err)
