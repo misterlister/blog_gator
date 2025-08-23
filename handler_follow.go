@@ -57,7 +57,7 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	}
 
 	if len(feedList) == 0 {
-		fmt.Printf("%s is is following no feeds\n", user.Name)
+		fmt.Printf("%s is following no feeds\n", user.Name)
 		return nil
 	}
 
@@ -66,5 +66,36 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	for _, feed := range feedList {
 		fmt.Printf(" - %s\n", feed.FeedName)
 	}
+	return nil
+}
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) == 0 {
+		return errors.New("no feed to unfollow was provided")
+	}
+
+	if len(cmd.args) > 1 {
+		return errors.New("too many arguments provided")
+	}
+
+	feedURL := cmd.args[0]
+
+	feed, err := s.db.GetFeedByURL(context.Background(), feedURL)
+
+	if err != nil {
+		return err
+	}
+
+	params := database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	}
+
+	err = s.db.DeleteFeedFollow(context.Background(), params)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
